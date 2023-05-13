@@ -1,0 +1,30 @@
+{
+  "name": "pet-adoption-be",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon server.js",
+    "start:prod": "NODE_ENV=production nodemon server.js",
+    "debug": "ndb server.js"
+  },
+  "author": "Nir",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NirItaCohen/pet-adoption-be.git"
+  },
+  "bugs": {
+    "url": "https://github.com/NirItaCohen/pet-adoption-be/issues"
+  },
+  "homepage": "https://github.com/NirItaCohen/pet-adoption-be#readme",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
+    "mongodb": "^5.4.0",
+    "mongoose": "^7.1.0",
+    "morgan": "^1.10.0",
+    "validator": "^13.9.0"
+  }
+}
