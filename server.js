@@ -15,3 +15,10 @@ mongoose.connect(DB).then((con) => {
 const port = process.env.PORT || 6000;
 
 app.listen(port);
+
+process.on("unhandledRejection", (err) => {
+  console.log(err.name, err.message);
+  ServerApiVersion.close(() => {
+    process.exit(1);
+  });
+});
