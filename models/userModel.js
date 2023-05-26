@@ -1,11 +1,18 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
+const bcrypt = require("bcryptjs");
+const catchAsync = require("../utils/catchAsync");
 
 const userSchema = new mongoose.Schema({
-  name: {
+  firstName: {
     type: String,
     trim: true,
-    requiered: [true, "A user must have a name"],
+    requiered: [true, "A user must have a first name"],
+  },
+  lastName: {
+    type: String,
+    trim: true,
+    requiered: [true, "A user must have a last name"],
   },
   email: {
     type: String,
@@ -16,8 +23,8 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["user", "admin"],
-    default: "user",
+    enum: ["regularUser", "admin"],
+    default: "regularUser",
   },
   password: {
     type: String,
@@ -35,17 +42,47 @@ const userSchema = new mongoose.Schema({
       },
       message: "Password must match",
     },
-    // select: false ???
   },
-  pets: {
-    type: [String],
+  passwordChangedAt: Date,
+  phone: Number,
+  petsAdopted: {
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Pet" }],
   },
+
+  petsFostered: {
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Pet" }],
+  },
+  petsLiked: {
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Pet" }],
+  },
+
   createAtt: {
     type: Date,
     default: Date.now(),
-    select: false
+    select: false,
   },
 });
+
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+  this.password = await bcrypt.hash(this.password, 12);
+  this.passwordConfirm = undefined;
+});
+
+userSchema.methods.correctPassword = async function (
+  candidatePassword,
+  userPassword
+) {
+  return await bcrypt.compare(candidatePassword, userPassword);
+};
+
+userSchema.methods.chngedPasswordAfter = function (JWTTimestamp) {
+  if (this.passwordChangedAt) {
+    const changedTimestampAt = +(this.passwordChangedAt.getTime() / 1000, 10);
+    return JWTTimestamp < changedTimestampAt;
+  }
+  return false;
+};
 
 const User = mongoose.model("User", userSchema);
 

@@ -1,22 +1,63 @@
-const express = require('express');
-const userController = require('../controllers/userController');
+const express = require("express");
+const userController = require("../controllers/userController");
+const authController = require("../controllers/authController");
 
 const router = express.Router();
 
+router.post("/signup", authController.signUp);
+router.post("/login", authController.login);
+
+router.patch(
+  "/updateMyPassword",
+  authController.protect,
+  authController.updatePassword
+);
+
+router.patch("/updateMe", authController.protect, userController.updateMe);
+
 router
-  .route('/')
+  .route("/")
   .get(userController.getAllUsers)
-  .post(userController.createUser);
+  .post(userController.createUser); // delete this after connecting signup
 
 router
-  .route('/:id')
+  .route("/:id")
   .get(userController.getUser)
-  .patch(userController.updateUser)
-  .delete(userController.deleteUser);
+  .patch(authController.protect, userController.updateUser)
+  .delete(
+    authController.protect,
+    authController.restrictToAdmin,
+    userController.deleteUser
+  );
 
-// QUERY ROUTE
+router
+  .route("/:userid/:petid")
+  .post(userController.addAdoptPetToUser)
+  .patch(userController.returnFromAdopt);
+
+router
+  .route("/:userid/:petid&method=foster")
+  .post(userController.addFosterPetToUser)
+  .patch(userController.returnFromFoster);
+
+router
+  .route("/:userid/:petid&method=like")
+  .post(userController.likePet)
+  .patch(userController.unLikePet);
+  
 // router
-//   .route('/search')
-//   .post()
+//   .route("/:userid/:petid")
+//   .post(authController.protect, userController.addAdoptPetToUser)
+//   .patch(authController.protect, userController.returnFromAdopt);
+
+// router
+//   .route("/:userid/:petid&method=foster")
+//   .post(authController.protect, userController.addFosterPetToUser)
+//   .patch(authController.protect, userController.returnFromFoster);
+
+// router
+//   .route("/:userid/:petid&method=like")
+//   .post(authController.protect, userController.likePet)
+//   .patch(authController.protect, userController.unLikePet);
 
 module.exports = router;

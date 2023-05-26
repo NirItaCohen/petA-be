@@ -1,20 +1,26 @@
-const express = require('express');
-const petController = require('../controllers/petController');
+const express = require("express");
+const petController = require("../controllers/petController");
+const authController = require("../controllers/authController");
 
 const router = express.Router();
 
 router
-  .route('/')
+  .route("/")
   .get(petController.getAllPets)
-  .post(petController.createPet);
+  .post(
+    authController.protect,
+    authController.restrictToAdmin,
+    petController.createPet
+  );
 
 router
-  .route('/:id')
+  .route("/:id")
   .get(petController.getPet)
-  .patch(petController.updatePet)
-  .delete(petController.deletePet);
-
-// QEURY ROUTE
-// router.route('/serch').post()
+  .patch(authController.protect, petController.updatePet)
+  .delete(
+    authController.protect,
+    authController.restrictToAdmin,
+    petController.deletePet
+  );
 
 module.exports = router;

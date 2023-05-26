@@ -32,6 +32,9 @@ const petSchema = new mongoose.Schema({
   hypoallergnic: Boolean,
   dietery: [String],
   breed: String,
+  userLiked: {
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  },
   createAt: {
     type: Date,
     default: Date.now(),
