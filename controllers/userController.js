@@ -10,7 +10,40 @@ const filterObj = (obj, ...allowedFields) => {
     }
   });
 };
-
+const writePetStatusToDB = async (status, req) => {
+  const updatePet = await Pet.findByIdAndUpdate(req.params.petid, {
+    $set: { adoptionStatus: status },
+  });
+};
+const successResponseReturnUser = (user, res) => {
+  if (user) {
+    res.status(200).json({
+      status: "success",
+      data: {
+        user,
+      },
+    });
+  } else {
+    return next(new AppError("No user found with that ID", 404));
+  }
+};
+const unLikeFunction = async (req) => {
+  const user = await User.findByIdAndUpdate(
+    req.params.userid,
+    { $pull: { petsLiked: req.params.petid } },
+    {
+      new: true,
+    }
+  );
+  const updatePet = await Pet.findByIdAndUpdate(
+    req.params.petid,
+    { $pull: { userLiked: req.params.userid } },
+    {
+      new: true,
+    }
+  );
+  return user;
+};
 // Admin but not only - can be used when check who foster/adopt pet
 exports.getAllUsers = catchAsync(async (req, res, next) => {
   const users = await User.find();
@@ -22,8 +55,8 @@ exports.getAllUsers = catchAsync(async (req, res, next) => {
     },
   });
 });
-
 // Admin but not only - can be used when check who foster/adopt pet
+
 // can be used also when rendering my pets page
 exports.getUser = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.params.id);
@@ -58,14 +91,7 @@ exports.updateUser = catchAsync(async (req, res, next) => {
   });
 
   if (user) {
-    res.status(200).json({
-      status: "success",
-      data: {
-        user,
-      },
-    });
-  } else {
-    return next(new AppError("No user found with that ID", 404));
+    successResponseReturnUser(user, res);
   }
 });
 
@@ -97,43 +123,12 @@ exports.likePet = catchAsync(async (req, res, next) => {
   const updatePet = await Pet.findByIdAndUpdate(req.params.petid, {
     $push: { userLiked: req.params.userid },
   });
-  if (user) {
-    res.status(200).json({
-      status: "success",
-      data: {
-        user,
-      },
-    });
-  } else {
-    return next(new AppError("No user found with that ID", 404));
-  }
+  successResponseReturnUser(user, res);
 });
 
 exports.unLikePet = catchAsync(async (req, res, next) => {
-  const user = await User.findByIdAndUpdate(
-    req.params.userid,
-    { $pull: { petsLiked: req.params.petid } },
-    {
-      new: true,
-    }
-  );
-  const updatePet = await Pet.findByIdAndUpdate(
-    req.params.petid,
-    { $pull: { userLiked: req.params.userid } },
-    {
-      new: true,
-    }
-  );
-  if (user) {
-    res.status(200).json({
-      status: "success",
-      data: {
-        user,
-      },
-    });
-  } else {
-    return next(new AppError("No user found with that ID", 404));
-  }
+  const user = unLikeFunction(req);
+  successResponseReturnUser(user, res);
 });
 
 // Admin and user
@@ -145,7 +140,7 @@ exports.addAdoptPetToUser = catchAsync(async (req, res, next) => {
   if (pet.adoptionStatus !== "Available") {
     return next(
       new AppError(
-        `${pet.name} is not avaliable to adopt. if you foster it, return first and then adopt.`
+        `${pet.name} is not available to adopt. if you foster it, return first and then adopt.`
       )
     );
   }
@@ -157,19 +152,9 @@ exports.addAdoptPetToUser = catchAsync(async (req, res, next) => {
       runValidators: true,
     }
   );
-  const updatePet = await Pet.findByIdAndUpdate(req.params.petid, {
-    $set: { adoptionStatus: "Adopted" },
-  });
-  if (user) {
-    res.status(200).json({
-      status: "success",
-      data: {
-        user,
-      },
-    });
-  } else {
-    return next(new AppError("No user found with that ID", 404));
-  }
+  writePetStatusToDB("Adopted", req);
+  successResponseReturnUser(user, res);
+  unLikeFunction(req);
 });
 
 // Admin and user
@@ -189,19 +174,9 @@ exports.addFosterPetToUser = catchAsync(async (req, res, next) => {
       runValidators: true,
     }
   );
-  const updatePet = await Pet.findByIdAndUpdate(req.params.petid, {
-    $set: { adoptionStatus: "Foster" },
-  });
-  if (user) {
-    res.status(200).json({
-      status: "success",
-      data: {
-        user,
-      },
-    });
-  } else {
-    return next(new AppError("No user found with that ID", 404));
-  }
+  writePetStatusToDB("Foster", req);
+  successResponseReturnUser(user, res);
+  unLikeFunction(req);
 });
 
 // Admin and user
@@ -214,6 +189,7 @@ exports.returnFromFoster = catchAsync(async (req, res, next) => {
       runValidators: true,
     }
   );
+  writePetStatusToDB("Available", req);
   if (user) {
     res.status(200).json({
       status: "success",
@@ -234,6 +210,7 @@ exports.returnFromAdopt = catchAsync(async (req, res, next) => {
       runValidators: true,
     }
   );
+  writePetStatusToDB("Available", req);
   if (user) {
     res.status(200).json({
       status: "success",
@@ -262,15 +239,3 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 
   createAndSendToken(updatedUser, 200, res);
 });
-
-// exports.deletePet = catchAsync(async (req, res, next) => {
-//   const pet = await Pet.findByIdAndDelete(req.params.id);
-//   if (pet) {
-//     res.status(204).json({
-//       status: "success",
-//       data: null,
-//     });
-//   } else {
-//     return next(new AppError("No user found with that ID", 404));
-//   }
-// });

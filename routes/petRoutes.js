@@ -4,14 +4,11 @@ const authController = require("../controllers/authController");
 
 const router = express.Router();
 
-router
-  .route("/")
-  .get(petController.getAllPets)
-  .post(
-    authController.protect,
-    authController.restrictToAdmin,
-    petController.createPet
-  );
+router.route("/").get(petController.getAllPets).post(
+  // authController.protect,
+  // authController.restrictToAdmin,
+  petController.createPet
+);
 
 router
   .route("/:id")

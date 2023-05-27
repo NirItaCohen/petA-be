@@ -30,34 +30,34 @@ router
     userController.deleteUser
   );
 
-router
-  .route("/:userid/:petid")
-  .post(userController.addAdoptPetToUser)
-  .patch(userController.returnFromAdopt);
-
-router
-  .route("/:userid/:petid&method=foster")
-  .post(userController.addFosterPetToUser)
-  .patch(userController.returnFromFoster);
-
-router
-  .route("/:userid/:petid&method=like")
-  .post(userController.likePet)
-  .patch(userController.unLikePet);
-  
 // router
-//   .route("/:userid/:petid")
-//   .post(authController.protect, userController.addAdoptPetToUser)
-//   .patch(authController.protect, userController.returnFromAdopt);
+//   .route("/:userid/:petid&method=adopt")
+//   .post(userController.addAdoptPetToUser)
+//   .patch(userController.returnFromAdopt);
 
 // router
 //   .route("/:userid/:petid&method=foster")
-//   .post(authController.protect, userController.addFosterPetToUser)
-//   .patch(authController.protect, userController.returnFromFoster);
+//   .post(userController.addFosterPetToUser)
+//   .patch(userController.returnFromFoster);
 
 // router
 //   .route("/:userid/:petid&method=like")
-//   .post(authController.protect, userController.likePet)
-//   .patch(authController.protect, userController.unLikePet);
+//   .post(userController.likePet)
+//   .patch(userController.unLikePet);
+
+router
+  .route("/:userid/:petid&method=adopt")
+  .post(authController.protect, userController.addAdoptPetToUser)
+  .patch(authController.protect, userController.returnFromAdopt);
+
+router
+  .route("/:userid/:petid&method=foster")
+  .post(authController.protect, userController.addFosterPetToUser)
+  .patch(authController.protect, userController.returnFromFoster);
+
+router
+  .route("/:userid/:petid&method=like")
+  .post(authController.protect, userController.likePet)
+  .patch(authController.protect, userController.unLikePet);
 
 module.exports = router;

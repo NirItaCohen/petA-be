@@ -1,5 +1,6 @@
 const express = require("express");
 const morgan = require("morgan");
+const cors = require("cors");
 
 const app = express();
 
@@ -23,8 +24,11 @@ app.use((req, res, next) => {
     "GET, POST, PUT, DELETE, PATCH"
   );
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  // res.setHeader("Access-Control-Expose-Headers", "Set-Cookie");
   next();
 });
+
+app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 
 // Body parser
 app.use(express.json());
